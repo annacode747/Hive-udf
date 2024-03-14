@@ -6,14 +6,21 @@ create function SumGenericUDAF as 'com.an.hive.udaf.SumGenericUDAF' using jar 'h
 -- drop function if exists SumResetUDAF;
 -- create function SumResetUDAF as 'com.an.hive.udaf.SumResetUDAF' using jar 'hdfs:/udf/Hive-dome-1.0-SNAPSHOT.jar';
 
-drop function if exists SumResetUDAF2;
-create function SumResetUDAF2 as 'com.an.hive.udaf.SumResetUDAF2' using jar 'hdfs:/udf/Hive-dome-1.0-SNAPSHOT.jar';
+drop function if exists sumgenericudaf;
+create function SumResetUDAF as 'com.an.hive.udaf.SumResetUDAF' using jar 'hdfs:/udf/Hive-dome-1.0-SNAPSHOT.jar';
 
 create function SumReset as 'com.an.hive.field.FieldLength' using jar 'hdfs:/udf/Hive-dome-1.0-SNAPSHOT.jar';
 create function SumReset2 as 'com.an.hive.udaf.SumReset2' using jar 'hdfs:/udf/Hive-dome-1.0-SNAPSHOT.jar';
 create function ExampleUDAF as 'com.an.hive.udaf.ExampleUDAF' using jar 'hdfs:/udf/Hive-dome-1.0-SNAPSHOT.jar';
 drop function if exists ExampleUDAF;
 
+create function JsonMap as 'com.an.hive.udaf.JsonMap' using jar 'hdfs:/udf/Hive-dome-1.0-SNAPSHOT.jar';
+drop function if exists JsonMap;
+
+SELECT JsonMap("4",'2');
+
+
+show functions like '*json*';
 
 
 WITH table1 AS (
@@ -46,8 +53,10 @@ WITH table1 AS (
     SELECT 6  AS c1, 14 AS c2   , 5 as p1
 )
 , t2 as (
-    SELECT p1,c1, c2,SumResetUDAF(c1) over (partition by p1 order by c2) as cc
+    SELECT p1,SumResetUDAF(c1) -- over (partition by p1 order by c2) as cc
     FROM table1
+    group by p1
+--     order by c2
 )
 SELECT * FROM t2;
 SELECT sum(c1) as c1_cum , sum(if(cc>0,cc,0)) as cc_sum
